@@ -1,6 +1,6 @@
 {
   "purpose": "improve-templearchy",
-  "iteration": 17,
+  "iteration": 18,
   "max": 20,
-  "last": "nvim :Qnext/:Qadd reads the same host share queue as nix run .#q"
+  "last": "If nightly is empty mid-publish, fetch the latest successful image workflow artifact"
 }

@@ -102,6 +102,35 @@ fetch_with_gh() {
   fi
 }
 
+unpack_iso_zst() {
+  local dest="$1"
+  local dest_dir zst
+  dest_dir="$(dirname "${dest}")"
+  zst="${dest}.zst"
+  if [[ -f "${zst}" ]]; then
+    zstd -d -f "${zst}" -o "${dest}"
+    echo "${dest}"
+    return 0
+  fi
+  if [[ -f "${zst}.01" && ! -f "${zst}.00" ]]; then
+    echo "ISO parts are incomplete (have .01, missing .00)" >&2
+    rm -f "${zst}".*
+    return 1
+  fi
+  local i=0
+  rm -f "${zst}"
+  while [[ -f "$(printf '%s.%02d' "${zst}" "${i}")" ]]; do
+    cat "$(printf '%s.%02d' "${zst}" "${i}")" >>"${zst}"
+    i=$((i + 1))
+  done
+  if [[ "${i}" -gt 0 ]]; then
+    zstd -d -f "${zst}" -o "${dest}"
+    echo "${dest}"
+    return 0
+  fi
+  return 1
+}
+
 # GitHub release files cap at 2GB. CI splits larger ISOs into .00 .01 ...
 fetch_release() {
   local name="$1"
@@ -112,28 +141,9 @@ fetch_release() {
   local zst="${dest}.zst"
   local expect
 
-  if fetch_with_gh "${dest_dir}"; then
-    if [[ -f "${zst}" ]]; then
-      zstd -d -f "${zst}" -o "${dest}"
-      echo "${dest}"
-      return 0
-    fi
-    if [[ -f "${zst}.01" && ! -f "${zst}.00" ]]; then
-      echo "nightly is missing ${name}.00 (half publish)" >&2
-      rm -f "${zst}".*
-    else
-      local i=0
-      rm -f "${zst}"
-      while [[ -f "$(printf '%s.%02d' "${zst}" "${i}")" ]]; do
-        cat "$(printf '%s.%02d' "${zst}" "${i}")" >>"${zst}"
-        i=$((i + 1))
-      done
-      if [[ "${i}" -gt 0 ]]; then
-        zstd -d -f "${zst}" -o "${dest}"
-        echo "${dest}"
-        return 0
-      fi
-    fi
+  if fetch_with_gh "${dest_dir}" && unpack_iso_zst "${dest}" >/dev/null; then
+    echo "${dest}"
+    return 0
   fi
 
   expect="$(asset_size "${name}" || true)"
@@ -169,6 +179,25 @@ fetch_release() {
   return 1
 }
 
+fetch_ci_artifact() {
+  local dest="$1"
+  local dest_dir run
+  dest_dir="$(dirname "${dest}")"
+  command -v gh >/dev/null 2>&1 || return 1
+  run="$(gh run list --repo "${REPO}" --workflow image --status success --limit 1 --json databaseId --jq '.[0].databaseId')"
+  if [[ -z "${run}" ]]; then
+    return 1
+  fi
+  echo "gh run download ${run} --name templearchy-aarch64-iso" >&2
+  rm -rf "${dest_dir}/ci-artifact"
+  mkdir -p "${dest_dir}/ci-artifact"
+  gh run download "${run}" --repo "${REPO}" --name templearchy-aarch64-iso --dir "${dest_dir}/ci-artifact"
+  rm -f "${dest_dir}"/templearchy-aarch64.iso.zst "${dest_dir}"/templearchy-aarch64.iso.zst.*
+  mv "${dest_dir}/ci-artifact/"templearchy-aarch64.iso.zst* "${dest_dir}/"
+  rmdir "${dest_dir}/ci-artifact" 2>/dev/null || true
+  unpack_iso_zst "${dest}"
+}
+
 resolve_boot() {
   # prints: KIND PATH
   if [[ -n "${TEMPLEARCHY_IMAGE:-}" ]]; then
@@ -199,6 +228,13 @@ resolve_boot() {
   fi
   if fetch_release "templearchy-aarch64.qcow2.zst" "${CACHE}/templearchy-aarch64.qcow2" >/dev/null; then
     echo "disk ${CACHE}/templearchy-aarch64.qcow2"
+    return
+  fi
+
+  echo "nightly empty or mid-publish; trying latest successful CI artifact" >&2
+  say "Fetching ISO from CI artifact"
+  if fetch_ci_artifact "${CACHE}/templearchy-aarch64.iso" >/dev/null; then
+    echo "iso ${CACHE}/templearchy-aarch64.iso"
     return
   fi
 
