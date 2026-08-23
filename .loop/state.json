@@ -1,6 +1,6 @@
 {
   "purpose": "improve-templearchy",
-  "iteration": 7,
+  "iteration": 8,
   "max": 20,
-  "last": "drop QtWebEngine/qutebrowser and docs so the ISO can publish"
+  "last": "nightly published; launcher uses HTTP/1.1 + size checks after truncated download"
 }

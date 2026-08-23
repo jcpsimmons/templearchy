@@ -49,6 +49,7 @@
             curl
             gnugrep
             gnused
+            python3
             qemu
             zstd
           ];

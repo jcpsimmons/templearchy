@@ -51,11 +51,29 @@ copy_from_store() {
   echo "${dest}"
 }
 
+asset_size() {
+  local name="$1"
+  curl -fsSL "https://api.github.com/repos/${REPO}/releases/tags/nightly" \
+    | python3 -c "import json,sys; name=sys.argv[1]; assets=json.load(sys.stdin).get('assets',[]);
+print(next((a['size'] for a in assets if a['name']==name), ''))" "${name}"
+}
+
 fetch_url() {
   local url="$1"
   local out="$2"
+  local expect="${3:-}"
   echo "fetch ${url}" >&2
-  curl -fL --retry 3 "${url}" -o "${out}"
+  # HTTP/2 from GitHub release CDN aborts large files with PROTOCOL_ERROR.
+  curl --http1.1 -fL --retry 8 --retry-all-errors -C - "${url}" -o "${out}"
+  if [[ -n "${expect}" ]]; then
+    local got
+    got="$(wc -c <"${out}" | tr -d ' ')"
+    if [[ "${got}" != "${expect}" ]]; then
+      echo "size mismatch ${out}: got ${got} want ${expect}" >&2
+      rm -f "${out}"
+      return 1
+    fi
+  fi
 }
 
 # GitHub release files cap at 2GB. CI splits larger ISOs into .00 .01 ...
@@ -64,8 +82,10 @@ fetch_release() {
   local dest="$2"
   local base="https://github.com/${REPO}/releases/download/nightly"
   local zst="${dest}.zst"
+  local expect
 
-  if fetch_url "${base}/${name}" "${zst}"; then
+  expect="$(asset_size "${name}" || true)"
+  if fetch_url "${base}/${name}" "${zst}" "${expect}"; then
     zstd -d -f "${zst}" -o "${dest}"
     echo "${dest}"
     return 0
@@ -73,11 +93,16 @@ fetch_release() {
 
   rm -f "${zst}"
   local i=0
-  local part
+  local part part_name
   while true; do
+    part_name="${name}.$(printf '%02d' "${i}")"
     part="$(printf '%s.%02d' "${zst}" "${i}")"
-    if ! fetch_url "${base}/${name}.$(printf '%02d' "${i}")" "${part}"; then
+    expect="$(asset_size "${part_name}" || true)"
+    if [[ -z "${expect}" ]]; then
       break
+    fi
+    if ! fetch_url "${base}/${part_name}" "${part}" "${expect}"; then
+      return 1
     fi
     cat "${part}" >>"${zst}"
     rm -f "${part}"
