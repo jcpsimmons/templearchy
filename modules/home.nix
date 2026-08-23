@@ -17,22 +17,6 @@
   xdg.configFile."i3status/config".source = ../dotfiles/i3status/config;
   xdg.configFile."rofi/config.rasi".source = ../dotfiles/rofi/config.rasi;
   xdg.configFile."nvim".source = ../vendor/nvim;
-  xdg.configFile."qutebrowser/config.py".text = ''
-    c.colors.webpage.darkmode.enabled = True
-    c.colors.tabs.bar.bg = "#000000"
-    c.colors.tabs.selected.even.bg = "#00ffff"
-    c.colors.tabs.selected.even.fg = "#000000"
-    c.colors.tabs.selected.odd.bg = "#00ffff"
-    c.colors.tabs.selected.odd.fg = "#000000"
-    c.colors.tabs.even.bg = "#000000"
-    c.colors.tabs.even.fg = "#00ff00"
-    c.colors.tabs.odd.bg = "#000000"
-    c.colors.tabs.odd.fg = "#00ff00"
-    c.fonts.default_family = "BigBlueTerm437 Nerd Font"
-    c.fonts.default_size = "12pt"
-    c.tabs.favicons.show = "never"
-    c.scrolling.smooth = False
-  '';
 
   home.file.".tmux.conf".source = ../dotfiles/tmux.conf;
   home.file.".local/bin/q" = {

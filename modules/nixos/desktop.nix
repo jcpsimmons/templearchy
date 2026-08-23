@@ -80,7 +80,6 @@ in
 
   environment.systemPackages = with pkgs; [
     pcmanfm
-    qutebrowser
     wezterm
   ];
 }

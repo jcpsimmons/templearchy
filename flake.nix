@@ -117,7 +117,7 @@
           i3-dotfile = pkgs.runCommand "templearchy-i3" { } ''
             grep -q 'set \$mod Mod4' ${./dotfiles/i3/config}
             grep -q 'wezterm' ${./dotfiles/i3/config}
-            grep -q 'qutebrowser' ${./dotfiles/i3/config}
+            grep -q 'pcmanfm' ${./dotfiles/i3/config}
             test -x ${./scripts/guest/q}
             grep -q 'Templearchy' ${./macos/Templearchy.app/Contents/MacOS/Templearchy}
             touch "$out"

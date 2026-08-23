@@ -1,6 +1,6 @@
 {
   "purpose": "improve-templearchy",
-  "iteration": 6,
+  "iteration": 7,
   "max": 20,
-  "last": "split ISO over 2GB GitHub cap; launcher concatenates parts"
+  "last": "drop QtWebEngine/qutebrowser and docs so the ISO can publish"
 }

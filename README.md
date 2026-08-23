@@ -17,7 +17,7 @@ Or double-click `macos/Templearchy.app`. Nix still owns qemu, firmware, and the 
 - WezTerm with `Homebrew (Gogh)`, BigBlueTerm437, saturation 1.4
 - Vendored Neovim (`murphy`) + tmux session `temple`
 - `q` prompt queue for LLM work (`q add`, `q drain` via aichat)
-- qutebrowser + pcmanfm (no Firefox — keeps the nightly ISO under GitHub's 2GB cap)
+- pcmanfm file GUI. No QtWebEngine browser — that alone blew the 2GB GitHub release cap.
 - User `josh` / password `temple`
 - SSH `2222`, host folder `~/templearchy-share` -> `/mnt/host`
 
@@ -40,7 +40,7 @@ TEMPLEARCHY_MEM=16384 TEMPLEARCHY_CPUS=8 nix run .
 | Super+Enter | WezTerm |
 | Super+Shift+Enter | WezTerm + tmux `temple` |
 | Super+n | nvim |
-| Super+g | qutebrowser |
+| Super+g | files |
 | Super+t | queue tmux |
 | Super+e | files |
 | Super+d | rofi |

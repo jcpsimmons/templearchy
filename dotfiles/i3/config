@@ -32,7 +32,7 @@ client.background       #000000
 bindsym $mod+Return exec $term
 bindsym $mod+Shift+Return exec $term start -- tmux new-session -A -s temple
 bindsym $mod+n exec $term start -- nvim
-bindsym $mod+g exec qutebrowser
+bindsym $mod+g exec pcmanfm
 bindsym $mod+e exec pcmanfm
 bindsym $mod+t exec $term start -- tmux new-session -A -s queue
 bindsym $mod+q kill
