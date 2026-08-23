@@ -63,8 +63,10 @@ fetch_url() {
   local out="$2"
   local expect="${3:-}"
   echo "fetch ${url}" >&2
-  # HTTP/2 from GitHub release CDN aborts large files with PROTOCOL_ERROR.
-  curl --http1.1 -fL --retry 8 --retry-all-errors -C - "${url}" -o "${out}"
+  rm -f "${out}"
+  # No -C: GitHub release CDNs 404 resume requests after the signed URL rotates.
+  # HTTP/1.1: HTTP/2 from that CDN aborts large files with PROTOCOL_ERROR.
+  curl --http1.1 -fL --retry 8 --retry-all-errors "${url}" -o "${out}"
   if [[ -n "${expect}" ]]; then
     local got
     got="$(wc -c <"${out}" | tr -d ' ')"
@@ -76,13 +78,42 @@ fetch_url() {
   fi
 }
 
+fetch_with_gh() {
+  local dest_dir="$1"
+  command -v gh >/dev/null 2>&1 || return 1
+  echo "gh release download nightly --repo ${REPO}" >&2
+  rm -f "${dest_dir}"/templearchy-aarch64.iso.zst "${dest_dir}"/templearchy-aarch64.iso.zst.*
+  gh release download nightly --repo "${REPO}" --dir "${dest_dir}" --pattern 'templearchy-aarch64.iso.zst*' --clobber
+}
+
 # GitHub release files cap at 2GB. CI splits larger ISOs into .00 .01 ...
 fetch_release() {
   local name="$1"
   local dest="$2"
+  local dest_dir
+  dest_dir="$(dirname "${dest}")"
   local base="https://github.com/${REPO}/releases/download/nightly"
   local zst="${dest}.zst"
   local expect
+
+  if fetch_with_gh "${dest_dir}"; then
+    if [[ -f "${zst}" ]]; then
+      zstd -d -f "${zst}" -o "${dest}"
+      echo "${dest}"
+      return 0
+    fi
+    local i=0
+    rm -f "${zst}"
+    while [[ -f "$(printf '%s.%02d' "${zst}" "${i}")" ]]; do
+      cat "$(printf '%s.%02d' "${zst}" "${i}")" >>"${zst}"
+      i=$((i + 1))
+    done
+    if [[ "${i}" -gt 0 ]]; then
+      zstd -d -f "${zst}" -o "${dest}"
+      echo "${dest}"
+      return 0
+    fi
+  fi
 
   expect="$(asset_size "${name}" || true)"
   if fetch_url "${base}/${name}" "${zst}" "${expect}"; then

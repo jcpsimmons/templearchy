@@ -47,6 +47,7 @@
           runtimeInputs = with pkgs; [
             coreutils
             curl
+            gh
             gnugrep
             gnused
             python3
