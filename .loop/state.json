@@ -1,6 +1,6 @@
 {
   "purpose": "improve-templearchy",
-  "iteration": 19,
+  "iteration": 20,
   "max": 20,
-  "last": "Refresh the cached ISO when nightly zst size changes; keep the old ISO if the fetch fails"
+  "last": "Finder .app opens Terminal and nix run github:jcpsimmons/templearchy so one-click works outside the clone"
 }

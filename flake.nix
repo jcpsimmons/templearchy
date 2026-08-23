@@ -190,6 +190,8 @@
             grep -q '/mnt/host/queue' ${./scripts/guest/q}
             test -x ${./scripts/guest/temple-session.sh}
             grep -q 'Templearchy' ${./macos/Templearchy.app/Contents/MacOS/Templearchy}
+            grep -q 'TEMPLEARCHY_IN_TTY' ${./macos/Templearchy.app/Contents/MacOS/Templearchy}
+            grep -q 'github:jcpsimmons/templearchy' ${./macos/Templearchy.app/Contents/MacOS/Templearchy}
             grep -q 'pgrep i3' ${./scripts/verify-boot.sh}
             grep -q 'edk2-arm-vars.fd' ${./scripts/launch.sh}
             grep -q 'bs=1M' ${./scripts/launch.sh}

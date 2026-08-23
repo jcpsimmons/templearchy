@@ -2,13 +2,18 @@
 # Double-click from Finder. Nix still owns qemu and the guest.
 set -euo pipefail
 
-export PATH="/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export PATH="/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin:${PATH}"
 if [[ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
   # shellcheck disable=SC1091
   . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 fi
 
-REPO="$(cd "$(dirname "$0")/../../../.." && pwd)"
+HERE="$(cd "$(dirname "$0")" && pwd)"
+REPO="$(cd "${HERE}/../../../.." && pwd)"
+FLAKE="github:jcpsimmons/templearchy"
+if [[ -f "${REPO}/flake.nix" ]]; then
+  FLAKE="${REPO}"
+fi
 
 if ! command -v nix >/dev/null 2>&1; then
   osascript -e 'display dialog "Nix is missing. Install Determinate Nix, then double-click Templearchy again." buttons {"OK"} default button "OK" with title "TEMPLEARCHY"'
@@ -16,6 +21,17 @@ if ! command -v nix >/dev/null 2>&1; then
   exit 1
 fi
 
-osascript -e 'display notification "Nix is starting qemu. First run waits for the nightly ISO." with title "TEMPLEARCHY"' || true
-cd "${REPO}"
-exec nix run "${REPO}"
+# Finder launches have no TTY. Re-exec in Terminal so ISO fetch and SSH hints are visible.
+if [[ ! -t 1 && -z "${TEMPLEARCHY_IN_TTY:-}" ]]; then
+  osascript <<EOF
+tell application "Terminal"
+  activate
+  do script "export TEMPLEARCHY_IN_TTY=1 PATH=$(printf %q "$PATH"); exec $(printf %q "$HERE/Templearchy")"
+end tell
+EOF
+  exit 0
+fi
+
+osascript -e 'display notification "Nix is starting qemu. Cocoa is i3. WezTerm is nix run .#term." with title "TEMPLEARCHY"' || true
+cd "${REPO}" 2>/dev/null || cd "${HOME}"
+exec nix run "${FLAKE}"
