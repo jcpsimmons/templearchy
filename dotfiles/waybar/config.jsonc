@@ -1,0 +1,34 @@
+{
+  "layer": "top",
+  "position": "top",
+  "height": 28,
+  "spacing": 0,
+  "modules-left": ["sway/workspaces", "sway/window"],
+  "modules-center": ["custom/mark"],
+  "modules-right": ["cpu", "memory", "clock"],
+  "sway/workspaces": {
+    "disable-scroll": true,
+    "all-outputs": true,
+    "format": "{name}"
+  },
+  "sway/window": {
+    "max-length": 48,
+    "format": "{title}"
+  },
+  "custom/mark": {
+    "format": "TEMPLEARCHY",
+    "interval": "once"
+  },
+  "cpu": {
+    "format": "CPU {usage}%",
+    "interval": 2
+  },
+  "memory": {
+    "format": "MEM {percentage}%",
+    "interval": 2
+  },
+  "clock": {
+    "format": "{:%Y-%m-%d %H:%M:%S}",
+    "interval": 1
+  }
+}

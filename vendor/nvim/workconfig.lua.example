@@ -1,0 +1,38 @@
+-- ============================================================================
+-- WORK CONFIGURATION EXAMPLE
+-- ============================================================================
+-- This file is optional and is loaded at startup if it exists.
+-- Rename this file to 'workconfig.lua' (without .example) to activate it.
+-- 
+-- This allows you to:
+-- - Add work-specific plugins
+-- - Override settings for work environment
+-- - Add work-specific keymaps
+-- - Configure work-specific LSP servers
+
+return {
+    -- Example: Work-specific plugins
+    -- These will be automatically loaded by lazy.nvim
+    plugin_config = {
+        -- Example work plugins:
+        -- { "company/internal-plugin" },
+        -- { "work/productivity-tools" },
+    },
+    
+    -- Example: Work-specific settings
+    settings = function()
+        -- Add any work-specific vim settings here
+        -- vim.opt.some_work_setting = true
+    end,
+    
+    -- Example: Work-specific keymaps
+    keymaps = function()
+        -- Add work-specific keymaps here
+        -- vim.keymap.set("n", "<leader>w", ":WorkCommand<CR>", { desc = "Work command" })
+    end,
+    
+    -- Example: Work-specific LSP configuration
+    lsp_config = function()
+        -- Add work-specific LSP servers or configurations
+    end
+}

@@ -1,0 +1,95 @@
+{
+  "vscode-neovim.neovimExecutablePaths.darwin": "/opt/homebrew/bin/nvim",
+  "vscode-neovim.neovimExecutablePaths.linux": "/usr/local/bin/nvim",
+  "vscode-neovim.neovimExecutablePaths.win32": "nvim.exe",
+
+  "vscode-neovim.neovimInitVimPaths.darwin": "~/.config/nvim/init.lua",
+  "vscode-neovim.neovimInitVimPaths.linux": "~/.config/nvim/init.lua",
+  "vscode-neovim.neovimInitVimPaths.win32": "~/AppData/Local/nvim/init.lua",
+
+  "vscode-neovim.ctrlKeysForInsertMode": [
+    "a",
+    "d",
+    "h",
+    "j",
+    "m",
+    "o",
+    "r",
+    "t",
+    "u",
+    "w"
+  ],
+  "vscode-neovim.ctrlKeysForNormalMode": [
+    "a",
+    "b",
+    "d",
+    "e",
+    "f",
+    "h",
+    "i",
+    "j",
+    "k",
+    "l",
+    "m",
+    "o",
+    "r",
+    "t",
+    "u",
+    "v",
+    "w",
+    "x",
+    "y",
+    "z",
+    "/",
+    "]"
+  ],
+
+  "editor.lineNumbers": "relative",
+  "editor.cursorStyle": "block",
+  "editor.insertSpaces": true,
+  "editor.tabSize": 2,
+  "editor.detectIndentation": true,
+  "editor.renderWhitespace": "selection",
+  "editor.scrollBeyondLastLine": false,
+  "editor.minimap.enabled": false,
+
+  "vim.useSystemClipboard": false,
+  "vim.handleKeys": {
+    "<C-a>": false,
+    "<C-f>": false,
+    "<C-c>": false,
+    "<C-v>": false,
+    "<C-x>": false,
+    "<C-z>": false
+  },
+
+  "editor.suggest.insertMode": "replace",
+  "editor.acceptSuggestionOnCommitCharacter": true,
+  "editor.acceptSuggestionOnEnter": "on",
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": false
+  },
+
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit"
+  },
+
+  "terminal.integrated.commandsToSkipShell": ["language-julia.interrupt"],
+
+  "files.associations": {
+    "*.lua": "lua"
+  },
+
+  "workbench.startupEditor": "newUntitledFile",
+  "workbench.editor.splitSizing": "distribute",
+
+  "extensions.experimental.affinity": {
+    "asvetliakov.vscode-neovim": 1
+  }
+}
