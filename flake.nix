@@ -89,6 +89,20 @@
           ''
           + lib.removePrefix "#!/usr/bin/env bash\n" (builtins.readFile ./scripts/guest/q);
         };
+
+      mkTerm =
+        system:
+        let
+          pkgs = mkPkgs system;
+        in
+        pkgs.writeShellApplication {
+          name = "templearchy-term";
+          runtimeInputs = with pkgs; [
+            openssh
+            sshpass
+          ];
+          text = lib.removePrefix "#!/usr/bin/env bash\n" (builtins.readFile ./scripts/host/term.sh);
+        };
     in
     {
       nixosConfigurations.templearchy = nixpkgs.lib.nixosSystem {
@@ -103,12 +117,14 @@
           launch = mkLaunch system;
           verify = mkVerify system;
           q = mkHostQ system;
+          term = mkTerm system;
         in
         {
           default = launch;
           launch = launch;
           verify = verify;
           q = q;
+          term = term;
         }
         // lib.optionalAttrs (system == guestSystem) {
           # ISO does not need KVM. qcow2 still does (linux-builder / local kvm).
@@ -134,6 +150,10 @@
         q = {
           type = "app";
           program = lib.getExe self.packages.${system}.q;
+        };
+        term = {
+          type = "app";
+          program = lib.getExe self.packages.${system}.term;
         };
       });
 
@@ -173,6 +193,7 @@
             grep -q 'edk2-arm-vars.fd' ${./scripts/launch.sh}
             grep -q 'bs=1M' ${./scripts/launch.sh}
             grep -q "pattern 'templearchy-aarch64.iso.zst'" ${./scripts/launch.sh}
+            grep -q 'wezterm start' ${./scripts/host/term.sh}
             touch "$out"
           '';
           efi-iso =

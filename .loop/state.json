@@ -1,6 +1,6 @@
 {
   "purpose": "improve-templearchy",
-  "iteration": 15,
+  "iteration": 16,
   "max": 20,
-  "last": "Publish nightly with gh release upload and wait until the ISO asset is actually listed"
+  "last": "Host nix run .#term opens WezTerm+BigBlueTerm over SSH into the guest"
 }

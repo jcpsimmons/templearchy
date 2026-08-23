@@ -231,6 +231,7 @@ echo "qemu:  ${QEMU_BIN}"
 echo "uefi:  ${FIRMWARE}"
 echo "share: ${SHARE}  ->  /mnt/host"
 echo "queue: nix run ${FLAKE}#q -- add 'your prompt'"
+echo "term:  nix run ${FLAKE}#term     (WezTerm + BigBlueTerm over SSH)"
 echo "ssh:   ssh josh@127.0.0.1 -p ${SSH_PORT}   (password: temple)"
 echo
 
