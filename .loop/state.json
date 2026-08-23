@@ -1,6 +1,6 @@
 {
   "purpose": "improve-templearchy",
-  "iteration": 4,
+  "iteration": 5,
   "max": 20,
-  "last": "slim ISO (drop Firefox), Mac progress notifications, Finder .command"
+  "last": "zstd -3 + artifact upload; -19 was blocking nightly publish"
 }
