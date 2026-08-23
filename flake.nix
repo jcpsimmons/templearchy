@@ -122,6 +122,14 @@
             grep -q 'Templearchy' ${./macos/Templearchy.app/Contents/MacOS/Templearchy}
             touch "$out"
           '';
+          efi-iso =
+            if system == guestSystem then
+              pkgs.runCommand "templearchy-efi-iso" { } ''
+                test "${toString self.nixosConfigurations.templearchy.config.system.build.images.iso.passthru.config.isoImage.makeEfiBootable}" = "1"
+                touch "$out"
+              ''
+            else
+              pkgs.runCommand "templearchy-efi-iso-skip" { } "touch $out";
         }
       );
 

@@ -13,6 +13,9 @@ in
     ./llm.nix
   ];
 
+  # Merges with nixpkgs iso-image.nix. Do not replace the attr.
+  image.modules.iso = ./iso-variant.nix;
+
   networking.hostName = "templearchy";
   networking.networkmanager.enable = true;
   networking.useDHCP = lib.mkDefault true;

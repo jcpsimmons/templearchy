@@ -79,23 +79,7 @@ resolve_boot() {
     return
   fi
 
-  echo "no local guest image; asking Nix, then GitHub nightly" >&2
-
-  if command -v nix >/dev/null 2>&1; then
-    local store_path=""
-    if store_path="$(nix build --no-link --print-out-paths "${FLAKE}#packages.aarch64-linux.iso" 2>/tmp/templearchy-nix-build.log)"; then
-      if copy_from_store "${store_path}" '*.iso' "${CACHE}/templearchy-aarch64.iso" >/dev/null; then
-        echo "iso ${CACHE}/templearchy-aarch64.iso"
-        return
-      fi
-    fi
-    if store_path="$(nix build --no-link --print-out-paths "${FLAKE}#packages.aarch64-linux.qcow2" 2>>/tmp/templearchy-nix-build.log)"; then
-      if copy_from_store "${store_path}" '*.qcow2' "${CACHE}/templearchy-aarch64.qcow2" >/dev/null; then
-        echo "disk ${CACHE}/templearchy-aarch64.qcow2"
-        return
-      fi
-    fi
-  fi
+  echo "no local guest image; nightly first (Darwin cannot build aarch64-linux)" >&2
 
   if fetch_release "templearchy-aarch64.iso.zst" "${CACHE}/templearchy-aarch64.iso" >/dev/null; then
     echo "iso ${CACHE}/templearchy-aarch64.iso"
@@ -104,6 +88,17 @@ resolve_boot() {
   if fetch_release "templearchy-aarch64.qcow2.zst" "${CACHE}/templearchy-aarch64.qcow2" >/dev/null; then
     echo "disk ${CACHE}/templearchy-aarch64.qcow2"
     return
+  fi
+
+  # Optional local build. Off by default on Darwin — it needs a Linux builder.
+  if [[ "${TEMPLEARCHY_BUILD:-0}" == "1" ]] && command -v nix >/dev/null 2>&1; then
+    local store_path=""
+    if store_path="$(nix build --no-link --print-out-paths "${FLAKE}#packages.aarch64-linux.iso" 2>/tmp/templearchy-nix-build.log)"; then
+      if copy_from_store "${store_path}" '*.iso' "${CACHE}/templearchy-aarch64.iso" >/dev/null; then
+        echo "iso ${CACHE}/templearchy-aarch64.iso"
+        return
+      fi
+    fi
   fi
 
   echo "no guest image" >&2
