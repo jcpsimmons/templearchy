@@ -46,31 +46,39 @@ jobs:
           path: templearchy-aarch64.iso.zst*
           if-no-files-found: error
       - name: Publish nightly
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: nightly
-          name: templearchy nightly
-          files: templearchy-aarch64.iso.zst*
-          body: NixOS aarch64 live ISO (i3 + wezterm + nvim). Built from flake.nix without KVM. Password is temple. If the ISO is split, the launcher concatenates the .00 .01 parts.
-          make_latest: true
-          draft: false
-          overwrite_files: true
-      - name: Fail if nightly is missing a part
         run: |
-          mapfile -t local_parts < <(ls -1 templearchy-aarch64.iso.zst templearchy-aarch64.iso.zst.* 2>/dev/null || true)
+          shopt -s nullglob
+          mapfile -t local_parts < <(find . -maxdepth 1 \( -name 'templearchy-aarch64.iso.zst' -o -name 'templearchy-aarch64.iso.zst.[0-9][0-9]' \) -printf '%f\n' | sort)
           test "${#local_parts[@]}" -gt 0
-          remote="$(gh release view nightly --json assets --jq '.assets[].name')"
-          echo "nightly assets:"
-          echo "$remote"
+          echo "local parts: ${local_parts[*]}"
+          if ! gh release view nightly >/dev/null 2>&1; then
+            gh release create nightly --title "templearchy nightly" --notes "NixOS aarch64 live ISO (i3 + wezterm + nvim). Password is temple."
+          else
+            gh release edit nightly --title "templearchy nightly" --notes "NixOS aarch64 live ISO (i3 + wezterm + nvim). Password is temple."
+          fi
+          gh release upload nightly "${local_parts[@]}" --clobber
+          remote=""
+          for attempt in 1 2 3 4 5 6 7 8; do
+            remote="$(gh release view nightly --json assets --jq '.assets[].name')"
+            echo "nightly assets (try ${attempt}):"
+            echo "$remote"
+            missing=0
+            for part in "${local_parts[@]}"; do
+              echo "$remote" | grep -qx "$part" || missing=1
+            done
+            if [ "$missing" -eq 0 ]; then
+              break
+            fi
+            sleep 5
+          done
           for part in "${local_parts[@]}"; do
             echo "$remote" | grep -qx "$part" || {
               echo "nightly is missing $part" >&2
               exit 1
             }
           done
-          # overwrite_files does not delete stale split leftovers.
           while IFS= read -r name; do
-            [[ -z "$name" ]] && continue
+            [ -z "$name" ] && continue
             keep=0
             for part in "${local_parts[@]}"; do
               if [ "$name" = "$part" ]; then
