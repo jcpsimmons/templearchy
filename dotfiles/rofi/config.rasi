@@ -1,0 +1,52 @@
+configuration {
+  font: "BigBlueTerm437 Nerd Font 14";
+  show-icons: false;
+  display-run: "RUN>";
+  display-window: "WIN>";
+}
+
+window {
+  background-color: #000000;
+  border: 4px;
+  border-color: #00ffff;
+  border-radius: 0;
+  padding: 8px;
+  width: 48em;
+}
+
+mainbox {
+  background-color: #000000;
+}
+
+inputbar {
+  background-color: #000000;
+  text-color: #00ffff;
+  padding: 4px;
+}
+
+prompt {
+  text-color: #00ffff;
+}
+
+entry {
+  text-color: #00ff00;
+  background-color: #000000;
+  cursor: 0;
+}
+
+listview {
+  background-color: #000000;
+  spacing: 0;
+  lines: 12;
+}
+
+element {
+  background-color: #000000;
+  text-color: #00a600;
+  padding: 2px 4px;
+}
+
+element selected {
+  background-color: #00ffff;
+  text-color: #000000;
+}

@@ -1,0 +1,20 @@
+#!/bin/bash
+# Double-click from Finder. Nix still owns qemu and the guest.
+set -euo pipefail
+
+export PATH="/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+if [[ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
+  # shellcheck disable=SC1091
+  . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+fi
+
+REPO="$(cd "$(dirname "$0")/../../../.." && pwd)"
+
+if ! command -v nix >/dev/null 2>&1; then
+  osascript -e 'display dialog "Nix is missing. Install Determinate Nix, then double-click Templearchy again." buttons {"OK"} default button "OK" with title "TEMPLEARCHY"'
+  open "https://docs.determinate.systems/determinate-nix"
+  exit 1
+fi
+
+cd "${REPO}"
+exec nix run "${REPO}"

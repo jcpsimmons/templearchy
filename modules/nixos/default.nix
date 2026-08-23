@@ -10,6 +10,7 @@ in
   imports = [
     ./desktop.nix
     ./guest.nix
+    ./llm.nix
   ];
 
   networking.hostName = "templearchy";

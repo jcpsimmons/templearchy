@@ -7,10 +7,6 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixos-generators = {
-      url = "github:nix-community/nixos-generators";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs =
@@ -18,7 +14,6 @@
       self,
       nixpkgs,
       home-manager,
-      nixos-generators,
     }:
     let
       inherit (nixpkgs) lib;
@@ -77,12 +72,9 @@
           launch = launch;
         }
         // lib.optionalAttrs (system == guestSystem) {
-          qcow2 = nixos-generators.nixosGenerate {
-            inherit system;
-            format = "qcow-efi";
-            modules = commonModules;
-            specialArgs = { inherit self; };
-          };
+          # ISO does not need KVM. qcow2 still does (linux-builder / local kvm).
+          iso = self.nixosConfigurations.templearchy.config.system.build.images.iso;
+          qcow2 = self.nixosConfigurations.templearchy.config.system.build.images.qemu-efi;
           toplevel = self.nixosConfigurations.templearchy.config.system.build.toplevel;
         }
       );
@@ -120,6 +112,14 @@
           nvim-vendor = pkgs.runCommand "templearchy-nvim" { } ''
             test -f ${./vendor/nvim/init.lua}
             grep -q 'murphy' ${./vendor/nvim/lua/plugins/themes.lua}
+            touch "$out"
+          '';
+          i3-dotfile = pkgs.runCommand "templearchy-i3" { } ''
+            grep -q 'set \$mod Mod4' ${./dotfiles/i3/config}
+            grep -q 'wezterm' ${./dotfiles/i3/config}
+            grep -q 'qutebrowser' ${./dotfiles/i3/config}
+            test -x ${./scripts/guest/q}
+            grep -q 'Templearchy' ${./macos/Templearchy.app/Contents/MacOS/Templearchy}
             touch "$out"
           '';
         }

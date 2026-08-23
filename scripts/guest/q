@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# File-backed LLM prompt queue. No secrets. Drain with aichat when you have a key.
+set -euo pipefail
+
+DIR="${TEMPLEARCHY_QUEUE:-${HOME}/.local/share/templearchy/queue}"
+mkdir -p "${DIR}"
+
+usage() {
+  cat <<'EOF'
+q add <text>     enqueue a prompt
+q list           show queued prompts
+q next           print and remove the oldest prompt
+q drain          run aichat on each prompt (needs AICHAT_API_KEY or similar)
+q watch          reprint the queue every 2s
+q clear          delete the queue
+
+This is the boring queue. Put prompts in. Drain them from nvim/tmux.
+EOF
+}
+
+next_id() {
+  local last
+  last="$(find "${DIR}" -maxdepth 1 -name '*.txt' -printf '%f\n' 2>/dev/null | sort | tail -n 1 || true)"
+  if [[ -z "${last}" ]]; then
+    printf '%04d' 1
+  else
+    printf '%04d' $((10#${last%.txt} + 1))
+  fi
+}
+
+cmd="${1:-}"
+shift || true
+
+case "${cmd}" in
+  add)
+    if [[ $# -eq 0 ]]; then
+      echo "q add <text>" >&2
+      exit 1
+    fi
+    id="$(next_id)"
+    printf '%s\n' "$*" >"${DIR}/${id}.txt"
+    echo "queued ${id}"
+    ;;
+  list)
+    if ! ls "${DIR}"/*.txt >/dev/null 2>&1; then
+      echo "(empty)"
+      exit 0
+    fi
+    for f in "${DIR}"/*.txt; do
+      printf '%s  %s\n' "$(basename "${f}" .txt)" "$(tr '\n' ' ' <"${f}")"
+    done
+    ;;
+  next)
+    first="$(ls "${DIR}"/*.txt 2>/dev/null | head -n 1 || true)"
+    if [[ -z "${first}" ]]; then
+      echo "(empty)" >&2
+      exit 1
+    fi
+    cat "${first}"
+    rm -f "${first}"
+    ;;
+  drain)
+    if ! command -v aichat >/dev/null 2>&1; then
+      echo "aichat not on PATH" >&2
+      exit 1
+    fi
+    while ls "${DIR}"/*.txt >/dev/null 2>&1; do
+      first="$(ls "${DIR}"/*.txt | head -n 1)"
+      echo "==== $(basename "${first}") ===="
+      aichat -H <"${first}"
+      rm -f "${first}"
+    done
+    ;;
+  watch)
+    while true; do
+      clear
+      echo "TEMPLEARCHY QUEUE"
+      echo
+      "$0" list
+      sleep 2
+    done
+    ;;
+  clear)
+    rm -f "${DIR}"/*.txt
+    echo "cleared"
+    ;;
+  *)
+    usage
+    exit 1
+    ;;
+esac

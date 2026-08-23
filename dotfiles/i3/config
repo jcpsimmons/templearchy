@@ -1,0 +1,91 @@
+# templearchy i3 — 0 radius, 0 blur, 0 taste. Cyan chrome on black.
+set $mod Mod4
+set $term wezterm
+set $menu rofi -show run -modi run,window
+
+font pango:BigBlueTerm437 Nerd Font 12
+
+# workspace bias: 1 = nvim/tmux, 2 = browser, 3 = files, 4 = queue
+set $ws1 "1:nvim"
+set $ws2 "2:web"
+set $ws3 "3:files"
+set $ws4 "4:queue"
+
+gaps inner 0
+gaps outer 0
+smart_gaps off
+smart_borders off
+hide_edge_borders none
+default_border pixel 4
+default_floating_border pixel 4
+title_align left
+for_window [class=".*"] border pixel 4
+
+# focused / unfocused / urgent / placeholder
+client.focused          #00FFFF #000000 #00FF00 #FFFF00 #00FFFF
+client.focused_inactive #00A6B2 #000000 #00A600 #000000 #00A6B2
+client.unfocused        #00A6B2 #000000 #00A600 #000000 #00A6B2
+client.urgent           #FFFF00 #000000 #FFFF00 #FFFF00 #FFFF00
+client.placeholder      #000000 #000000 #00FF00 #000000 #000000
+client.background       #000000
+
+bindsym $mod+Return exec $term
+bindsym $mod+Shift+Return exec $term start -- tmux new-session -A -s temple
+bindsym $mod+n exec $term start -- nvim
+bindsym $mod+g exec qutebrowser
+bindsym $mod+Shift+g exec firefox
+bindsym $mod+e exec pcmanfm
+bindsym $mod+t exec $term start -- tmux new-session -A -s queue
+bindsym $mod+q kill
+bindsym $mod+d exec $menu
+bindsym $mod+Shift+c reload
+bindsym $mod+Shift+r restart
+bindsym $mod+Shift+e exec i3-nagbar -t warning -m 'exit templearchy session?' -b 'exit' 'i3-msg exit'
+bindsym $mod+f fullscreen toggle
+bindsym $mod+space floating toggle
+bindsym $mod+Shift+space focus mode_toggle
+
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
+bindsym $mod+Shift+h move left
+bindsym $mod+Shift+j move down
+bindsym $mod+Shift+k move up
+bindsym $mod+Shift+l move right
+
+bindsym $mod+1 workspace $ws1
+bindsym $mod+2 workspace $ws2
+bindsym $mod+3 workspace $ws3
+bindsym $mod+4 workspace $ws4
+bindsym $mod+5 workspace number 5
+bindsym $mod+6 workspace number 6
+bindsym $mod+7 workspace number 7
+bindsym $mod+8 workspace number 8
+bindsym $mod+9 workspace number 9
+bindsym $mod+Shift+1 move container to workspace $ws1
+bindsym $mod+Shift+2 move container to workspace $ws2
+bindsym $mod+Shift+3 move container to workspace $ws3
+bindsym $mod+Shift+4 move container to workspace $ws4
+
+bindsym $mod+v split v
+bindsym $mod+b split h
+
+bar {
+    status_command i3status
+    position top
+    font pango:BigBlueTerm437 Nerd Font 11
+    colors {
+        background #000000
+        statusline #00FF00
+        separator  #00FFFF
+        focused_workspace  #00FFFF #00FFFF #000000
+        active_workspace   #00A6B2 #000000 #00FF00
+        inactive_workspace #00A6B2 #000000 #00A600
+        urgent_workspace   #FFFF00 #FFFF00 #000000
+    }
+}
+
+exec --no-startup-id xsetroot -solid "#000000"
+exec --no-startup-id xrandr --output Virtual-1 --mode 1440x900 || true
+exec --no-startup-id $term start -- tmux new-session -A -s temple

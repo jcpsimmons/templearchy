@@ -10,6 +10,7 @@
   boot.kernelParams = [
     "console=tty0"
     "console=ttyAMA0,115200"
+    "video=Virtual-1:1440x900@60"
   ];
   boot.initrd.availableKernelModules = [
     "virtio_pci"
@@ -17,6 +18,9 @@
     "virtio_blk"
     "virtio_net"
     "virtio_gpu"
+    "virtio_9p"
+    "9p"
+    "9pnet_virtio"
     "xhci_pci"
   ];
 
@@ -27,4 +31,15 @@
   };
 
   virtualisation.diskSize = 20480;
+
+  fileSystems."/mnt/host" = {
+    device = "hostshare";
+    fsType = "9p";
+    options = [
+      "trans=virtio"
+      "version=9p2000.L"
+      "msize=104857600"
+      "nofail"
+    ];
+  };
 }

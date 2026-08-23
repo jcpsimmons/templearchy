@@ -9,24 +9,24 @@ permissions:
   contents: write
 
 jobs:
-  qcow:
+  iso:
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main
-      - name: Build guest image from flake
-        run: nix build .#packages.aarch64-linux.qcow2 -L --out-link result
-      - name: Compress qcow2
+      - name: Build live ISO from flake (no KVM)
+        run: nix build .#packages.aarch64-linux.iso -L --out-link result
+      - name: Compress ISO
         run: |
-          qcow="$(find -L result -name '*.qcow2' -print -quit)"
-          test -n "$qcow"
-          zstd -T0 -19 -f "$qcow" -o templearchy-aarch64.qcow2.zst
-          ls -lh templearchy-aarch64.qcow2.zst
+          iso="$(find -L result -name '*.iso' -print -quit)"
+          test -n "$iso"
+          zstd -T0 -19 -f "$iso" -o templearchy-aarch64.iso.zst
+          ls -lh templearchy-aarch64.iso.zst
       - name: Publish nightly
         uses: softprops/action-gh-release@v2
         with:
           tag_name: nightly
           name: templearchy nightly
-          files: templearchy-aarch64.qcow2.zst
-          body: NixOS aarch64 guest built from flake.nix on ubuntu-24.04-arm. Password is temple.
+          files: templearchy-aarch64.iso.zst
+          body: NixOS aarch64 live ISO (i3 + wezterm + nvim). Built from flake.nix without KVM. Password is temple.
           make_latest: true

@@ -3,32 +3,48 @@ let
   palette = import ../palette.nix;
 in
 {
-  programs.sway = {
+  # X11 + i3: simple tiling, reliable in a QEMU cocoa window on a Mac host.
+  services.xserver.enable = true;
+  services.xserver.autorun = true;
+  services.xserver.videoDrivers = [
+    "modesetting"
+    "fbdev"
+  ];
+  services.xserver.xkb.layout = "us";
+  services.xserver.windowManager.i3 = {
     enable = true;
-    wrapperFeatures.gtk = true;
     extraPackages = with pkgs; [
-      fuzzel
-      grim
-      slurp
-      swaybg
-      waybar
-      wezterm
-      wl-clipboard
+      dmenu
+      i3status
+      rofi
+      xclip
+      xrandr
+      xsetroot
     ];
   };
 
-  services.greetd = {
+  services.displayManager.defaultSession = "none+i3";
+  services.displayManager.autoLogin.enable = true;
+  services.displayManager.autoLogin.user = "josh";
+  services.xserver.displayManager.lightdm.enable = true;
+  services.xserver.displayManager.lightdm.greeters.mini = {
     enable = true;
-    settings = {
-      default_session = {
-        command = "${pkgs.sway}/bin/sway";
-        user = "josh";
-      };
-      initial_session = {
-        command = "${pkgs.sway}/bin/sway";
-        user = "josh";
-      };
-    };
+    user = "josh";
+    extraConfig = ''
+      [greeter]
+      show-password-label = false
+      [greeter-theme]
+      font = "${palette.font}"
+      font-size = 14
+      background-image = ""
+      background-color = "#000000"
+      window-color = "#000000"
+      border-color = "#00ffff"
+      border-width = 4px
+      text-color = "#00ff00"
+      password-background-color = "#000000"
+      password-border-color = "#00ffff"
+    '';
   };
 
   hardware.graphics.enable = true;
@@ -41,11 +57,10 @@ in
   fonts.fontconfig.defaultFonts.monospace = [ palette.font ];
 
   environment.sessionVariables = {
-    WLR_RENDERER = "pixman";
-    WLR_NO_HARDWARE_CURSORS = "1";
-    WLR_RENDERER_ALLOW_SOFTWARE = "1";
-    XDG_CURRENT_DESKTOP = "sway";
-    XDG_SESSION_TYPE = "wayland";
+    EDITOR = "nvim";
+    VISUAL = "nvim";
+    XDG_CURRENT_DESKTOP = "i3";
+    XDG_SESSION_TYPE = "x11";
   };
 
   services.pipewire = {
@@ -57,9 +72,16 @@ in
 
   xdg.portal = {
     enable = true;
-    wlr.enable = true;
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    config.common.default = "*";
   };
 
   programs.dconf.enable = true;
+
+  environment.systemPackages = with pkgs; [
+    firefox
+    pcmanfm
+    qutebrowser
+    wezterm
+  ];
 }

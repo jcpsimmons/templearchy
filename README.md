@@ -2,34 +2,32 @@
 
 Nix-configured Omarchy alternative.
 
-Not tasteful. Harsh high-contrast. BigBlueTerm437. Homebrew green. Murphy nvim. Cyan chrome on black.
-
-Omarchy is a beautiful Arch/Hyprland desktop. This is the other pole: **Nix is the only configuration surface**, the guest is NixOS, and the host launcher is a Nix app. One command on an Apple Silicon Mac boots a Linux VM that looks like Josh's WezTerm / BigBlueTerm / Neovim setup.
+Not tasteful. Harsh high-contrast. BigBlueTerm437. Homebrew green. Murphy nvim. i3 in a Mac window.
 
 ```
 nix run github:jcpsimmons/templearchy
 ```
 
-That command is Nix all the way down: qemu, UEFI firmware, and the guest image come from the flake (or a nightly image the flake built).
+Or double-click `macos/Templearchy.app`. Nix still owns qemu, firmware, and the guest.
 
 ## What you get
 
 - NixOS aarch64 guest, defined in `flake.nix`
-- Sway, 0 gaps, 0 radius, 4px cyan borders
-- WezTerm with `Homebrew (Gogh)`, BigBlueTerm437, saturation 1.4, blinking block cursor
-- Vendored Neovim config (`murphy` + `16color` lualine)
-- User `josh` / password `temple` (published demo password, not a secret)
-- SSH on host port `2222`
+- i3 + X11 (simple tiling, cocoa GUI on the Mac host)
+- WezTerm with `Homebrew (Gogh)`, BigBlueTerm437, saturation 1.4
+- Vendored Neovim (`murphy`) + tmux session `temple`
+- `q` prompt queue for LLM work (`q add`, `q drain` via aichat)
+- qutebrowser + Firefox + pcmanfm
+- User `josh` / password `temple`
+- SSH `2222`, host folder `~/templearchy-share` -> `/mnt/host`
 
 ## One-click on Apple Silicon
 
-1. Install Determinate Nix if you do not already have Nix
-2. Run `nix run github:jcpsimmons/templearchy`
-3. First boot needs a guest qcow2:
-   - nightly release at `jcpsimmons/templearchy` (built from this flake on `ubuntu-24.04-arm`), or
-   - local build via a Linux builder: `nix run nixpkgs#darwin.linux-builder` then `nix build .#packages.aarch64-linux.qcow2`
+1. Install Determinate Nix
+2. `nix run github:jcpsimmons/templearchy` or open `macos/Templearchy.app`
+3. A QEMU cocoa window opens. i3 autologins.
 
-QEMU uses HVF. Default: 6 CPUs, 8G RAM.
+Guest media is a live ISO built without KVM (GHA `ubuntu-24.04-arm`). Nightly: `jcpsimmons/templearchy` releases. A 20G persist disk is created beside it.
 
 ```
 TEMPLEARCHY_MEM=16384 TEMPLEARCHY_CPUS=8 nix run .
@@ -40,33 +38,36 @@ TEMPLEARCHY_MEM=16384 TEMPLEARCHY_CPUS=8 nix run .
 | Key | Action |
 | --- | --- |
 | Super+Enter | WezTerm |
-| Super+d | fuzzel |
-| Super+q | kill window |
+| Super+Shift+Enter | WezTerm + tmux `temple` |
+| Super+n | nvim |
+| Super+g | qutebrowser |
+| Super+Shift+g | Firefox |
+| Super+t | queue tmux |
+| Super+e | files |
+| Super+d | rofi |
 | Super+h/j/k/l | focus |
-| Super+1..9 | workspace |
+
+## Queue
+
+```
+q add rewrite this function
+q list
+q drain
+```
+
+`q drain` runs `aichat`. No API keys are in the repo. Export yours in the guest.
 
 ## Edit the look
 
-Nix owns it. Do not configure the guest by hand.
+Nix owns it.
 
 | Thing | File |
 | --- | --- |
 | Colors | `modules/palette.nix` |
-| Guest OS | `modules/nixos/` |
-| WezTerm / Sway / Waybar | `dotfiles/` |
-| Neovim | `vendor/nvim/` (brought over from `~/.config/nvim`) |
-| Host launch | `scripts/launch.sh` wrapped by `flake.nix` |
+| i3 / X11 | `modules/nixos/desktop.nix`, `dotfiles/i3/` |
+| LLM / nvim tools | `modules/nixos/llm.nix` |
+| WezTerm | `dotfiles/wezterm.lua` |
+| Neovim | `vendor/nvim/` |
+| Host launch | `scripts/launch.sh`, `macos/Templearchy.app` |
 
-CRT shaders from [wezterm-crt](https://github.com/jcpsimmons/wezterm-crt) are not in the guest. Regular WezTerm is pinned to the same palette and font.
-
-## Bare metal / existing NixOS
-
-```
-sudo nixos-rebuild switch --flake github:jcpsimmons/templearchy#templearchy
-```
-
-Default branch is `master`.
-
-## No secrets
-
-Public repo. No tokens, no `.env`, no private keys. The VM password is `temple` on purpose.
+Default branch is `master`. No secrets.
