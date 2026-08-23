@@ -68,5 +68,19 @@ jobs:
               exit 1
             }
           done
+          # overwrite_files does not delete stale split leftovers.
+          while IFS= read -r name; do
+            [[ -z "$name" ]] && continue
+            keep=0
+            for part in "${local_parts[@]}"; do
+              if [ "$name" = "$part" ]; then
+                keep=1
+              fi
+            done
+            if [ "$keep" -eq 0 ]; then
+              echo "deleting stale nightly asset $name"
+              gh release delete-asset nightly "$name" --yes
+            fi
+          done <<< "$remote"
         env:
           GH_TOKEN: ${{ github.token }}

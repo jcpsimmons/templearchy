@@ -93,7 +93,13 @@ fetch_with_gh() {
   command -v gh >/dev/null 2>&1 || return 1
   echo "gh release download nightly --repo ${REPO}" >&2
   rm -f "${dest_dir}"/templearchy-aarch64.iso.zst "${dest_dir}"/templearchy-aarch64.iso.zst.*
-  gh release download nightly --repo "${REPO}" --dir "${dest_dir}" --pattern 'templearchy-aarch64.iso.zst*' --clobber
+  # Prefer the unsplit file. Pattern zst* also matches leftover .00/.01 (~1.8G extra).
+  if gh release view nightly --repo "${REPO}" --json assets --jq '.assets[].name' \
+    | grep -qx 'templearchy-aarch64.iso.zst'; then
+    gh release download nightly --repo "${REPO}" --dir "${dest_dir}" --pattern 'templearchy-aarch64.iso.zst' --clobber
+  else
+    gh release download nightly --repo "${REPO}" --dir "${dest_dir}" --pattern 'templearchy-aarch64.iso.zst.*' --clobber
+  fi
 }
 
 # GitHub release files cap at 2GB. CI splits larger ISOs into .00 .01 ...

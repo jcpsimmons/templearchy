@@ -172,6 +172,7 @@
             grep -q 'pgrep i3' ${./scripts/verify-boot.sh}
             grep -q 'edk2-arm-vars.fd' ${./scripts/launch.sh}
             grep -q 'bs=1M' ${./scripts/launch.sh}
+            grep -q "pattern 'templearchy-aarch64.iso.zst'" ${./scripts/launch.sh}
             touch "$out"
           '';
           efi-iso =

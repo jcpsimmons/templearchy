@@ -1,6 +1,6 @@
 {
   "purpose": "improve-templearchy",
-  "iteration": 13,
+  "iteration": 14,
   "max": 20,
-  "last": "Host nix run .#q writes into ~/templearchy-share/queue; guest q watch reads /mnt/host/queue"
+  "last": "Download only the unsplit nightly zst; delete stale .00/.01 leftovers on publish"
 }
