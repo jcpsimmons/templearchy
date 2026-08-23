@@ -1,6 +1,6 @@
 {
   "purpose": "improve-templearchy",
-  "iteration": 10,
+  "iteration": 11,
   "max": 20,
-  "last": "Do not split ISOs that fit under GitHub's 2GiB cap; reject a .01-only nightly"
+  "last": "QEMU 11 UEFI vars + writable pflash; guest booted i3/wezterm/nvim over SSH"
 }

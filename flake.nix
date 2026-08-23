@@ -56,6 +56,22 @@
           ];
           text = builtins.readFile ./scripts/launch.sh;
         };
+
+      mkVerify =
+        system:
+        let
+          pkgs = mkPkgs system;
+        in
+        pkgs.writeShellApplication {
+          name = "templearchy-verify";
+          runtimeInputs = [
+            (mkLaunch system)
+            pkgs.coreutils
+            pkgs.expect
+            pkgs.openssh
+          ];
+          text = builtins.readFile ./scripts/verify-boot.sh;
+        };
     in
     {
       nixosConfigurations.templearchy = nixpkgs.lib.nixosSystem {
@@ -68,10 +84,12 @@
         system:
         let
           launch = mkLaunch system;
+          verify = mkVerify system;
         in
         {
           default = launch;
           launch = launch;
+          verify = verify;
         }
         // lib.optionalAttrs (system == guestSystem) {
           # ISO does not need KVM. qcow2 still does (linux-builder / local kvm).
@@ -89,6 +107,10 @@
         launch = {
           type = "app";
           program = lib.getExe self.packages.${system}.launch;
+        };
+        verify = {
+          type = "app";
+          program = lib.getExe self.packages.${system}.verify;
         };
       });
 
@@ -122,6 +144,9 @@
             grep -q 'pcmanfm' ${./dotfiles/i3/config}
             test -x ${./scripts/guest/q}
             grep -q 'Templearchy' ${./macos/Templearchy.app/Contents/MacOS/Templearchy}
+            grep -q 'pgrep i3' ${./scripts/verify-boot.sh}
+            grep -q 'edk2-arm-vars.fd' ${./scripts/launch.sh}
+            grep -q 'bs=1M' ${./scripts/launch.sh}
             touch "$out"
           '';
           efi-iso =

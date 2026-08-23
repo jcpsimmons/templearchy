@@ -29,8 +29,18 @@ echo
 
 QEMU_BIN="$(command -v qemu-system-aarch64)"
 QEMU_PREFIX="$(dirname "$(dirname "${QEMU_BIN}")")"
-FIRMWARE="${TEMPLEARCHY_FIRMWARE:-${QEMU_PREFIX}/share/qemu/edk2-aarch64-code.fd}"
-VARS_SRC="${TEMPLEARCHY_VARS:-${QEMU_PREFIX}/share/qemu/edk2-aarch64-vars.fd}"
+QEMU_SHARE="${QEMU_PREFIX}/share/qemu"
+FIRMWARE="${TEMPLEARCHY_FIRMWARE:-${QEMU_SHARE}/edk2-aarch64-code.fd}"
+# QEMU 11 dropped edk2-aarch64-vars.fd. The 64M arm vars file is the same layout.
+VARS_SRC="${TEMPLEARCHY_VARS:-}"
+if [[ -z "${VARS_SRC}" ]]; then
+  for candidate in "${QEMU_SHARE}/edk2-aarch64-vars.fd" "${QEMU_SHARE}/edk2-arm-vars.fd"; do
+    if [[ -f "${candidate}" ]]; then
+      VARS_SRC="${candidate}"
+      break
+    fi
+  done
+fi
 
 if [[ ! -f "${FIRMWARE}" ]]; then
   echo "missing UEFI firmware at ${FIRMWARE}" >&2
@@ -218,11 +228,18 @@ echo "ssh:   ssh josh@127.0.0.1 -p ${SSH_PORT}   (password: temple)"
 echo
 
 VARS="${CACHE}/vars.fd"
-if [[ ! -f "${VARS}" && -f "${VARS_SRC}" ]]; then
+if [[ ! -f "${VARS}" && -n "${VARS_SRC}" && -f "${VARS_SRC}" ]]; then
   cp "${VARS_SRC}" "${VARS}"
+  chmod u+w "${VARS}"
 elif [[ ! -f "${VARS}" ]]; then
-  dd if=/dev/zero of="${VARS}" bs=1m count=64 >/dev/null 2>&1
+  # GNU dd (Nix coreutils) wants 1M. BSD dd also accepts it.
+  dd if=/dev/zero of="${VARS}" bs=1M count=64
 fi
+if [[ ! -f "${VARS}" ]]; then
+  echo "missing UEFI vars at ${VARS}" >&2
+  exit 1
+fi
+chmod u+w "${VARS}"
 
 PERSIST="${CACHE}/persist.qcow2"
 if [[ ! -f "${PERSIST}" ]]; then
@@ -243,7 +260,9 @@ if [[ "${DISPLAY_MODE}" == "cocoa" ]]; then
   DISPLAY_ARGS=(-display "cocoa,show-cursor=on,zoom-to-fit=on")
 fi
 if [[ "${DISPLAY_MODE}" == "none" ]]; then
-  DISPLAY_ARGS=(-nographic)
+  # Keep virtio-gpu so i3/X still start. -nographic drops the GPU and
+  # fights -serial mon:stdio.
+  DISPLAY_ARGS=(-display none)
 fi
 
 MEDIA_ARGS=()
