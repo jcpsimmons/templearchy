@@ -16,7 +16,7 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@main
       - name: Build live ISO from flake (no KVM)
         run: nix build .#packages.aarch64-linux.iso -L --out-link result
-      - name: Compress and split under the 2GB GitHub file cap
+      - name: Compress and split only if over GitHub's 2GiB file cap
         run: |
           iso="$(find -L result -name '*.iso' -print -quit)"
           test -n "$iso"
@@ -24,12 +24,16 @@ jobs:
           zstd -T0 -3 -f "$iso" -o templearchy-aarch64.iso.zst
           ls -lh templearchy-aarch64.iso.zst
           bytes="$(wc -c < templearchy-aarch64.iso.zst)"
-          if [ "$bytes" -gt 1900000000 ]; then
-            split -b 1800M -d -a 2 templearchy-aarch64.iso.zst templearchy-aarch64.iso.zst.
+          # GitHub asset cap is 2147483648. 1.9G was too low: a 1.82GiB
+          # zst still split, then the 1800M .00 part often failed to land.
+          if [ "$bytes" -gt 2100000000 ]; then
+            split -b 1600M -d -a 2 templearchy-aarch64.iso.zst templearchy-aarch64.iso.zst.
             rm -f templearchy-aarch64.iso.zst
             ls -lh templearchy-aarch64.iso.zst.*
+            test -f templearchy-aarch64.iso.zst.00
+            test -f templearchy-aarch64.iso.zst.01
           fi
-      - name: Drop a leftover draft nightly so upload can replace it
+      - name: Drop leftover drafts and a half-published nightly
         run: |
           gh api repos/${{ github.repository }}/releases --jq '.[] | select(.draft==true) | .id' \
             | xargs -r -I{} gh api -X DELETE repos/${{ github.repository }}/releases/{}
@@ -50,3 +54,19 @@ jobs:
           body: NixOS aarch64 live ISO (i3 + wezterm + nvim). Built from flake.nix without KVM. Password is temple. If the ISO is split, the launcher concatenates the .00 .01 parts.
           make_latest: true
           draft: false
+          overwrite_files: true
+      - name: Fail if nightly is missing a part
+        run: |
+          mapfile -t local_parts < <(ls -1 templearchy-aarch64.iso.zst templearchy-aarch64.iso.zst.* 2>/dev/null || true)
+          test "${#local_parts[@]}" -gt 0
+          remote="$(gh release view nightly --json assets --jq '.assets[].name')"
+          echo "nightly assets:"
+          echo "$remote"
+          for part in "${local_parts[@]}"; do
+            echo "$remote" | grep -qx "$part" || {
+              echo "nightly is missing $part" >&2
+              exit 1
+            }
+          done
+        env:
+          GH_TOKEN: ${{ github.token }}

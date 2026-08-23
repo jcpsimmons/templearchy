@@ -1,6 +1,6 @@
 {
   "purpose": "improve-templearchy",
-  "iteration": 9,
+  "iteration": 10,
   "max": 20,
-  "last": "gh release download; stop resume-404s on GitHub CDN"
+  "last": "Do not split ISOs that fit under GitHub's 2GiB cap; reject a .01-only nightly"
 }

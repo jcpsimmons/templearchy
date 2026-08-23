@@ -102,16 +102,21 @@ fetch_release() {
       echo "${dest}"
       return 0
     fi
-    local i=0
-    rm -f "${zst}"
-    while [[ -f "$(printf '%s.%02d' "${zst}" "${i}")" ]]; do
-      cat "$(printf '%s.%02d' "${zst}" "${i}")" >>"${zst}"
-      i=$((i + 1))
-    done
-    if [[ "${i}" -gt 0 ]]; then
-      zstd -d -f "${zst}" -o "${dest}"
-      echo "${dest}"
-      return 0
+    if [[ -f "${zst}.01" && ! -f "${zst}.00" ]]; then
+      echo "nightly is missing ${name}.00 (half publish)" >&2
+      rm -f "${zst}".*
+    else
+      local i=0
+      rm -f "${zst}"
+      while [[ -f "$(printf '%s.%02d' "${zst}" "${i}")" ]]; do
+        cat "$(printf '%s.%02d' "${zst}" "${i}")" >>"${zst}"
+        i=$((i + 1))
+      done
+      if [[ "${i}" -gt 0 ]]; then
+        zstd -d -f "${zst}" -o "${dest}"
+        echo "${dest}"
+        return 0
+      fi
     fi
   fi
 
