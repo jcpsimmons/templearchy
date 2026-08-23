@@ -2,7 +2,14 @@
 # File-backed LLM prompt queue. No secrets. Drain with aichat when you have a key.
 set -euo pipefail
 
-DIR="${TEMPLEARCHY_QUEUE:-${HOME}/.local/share/templearchy/queue}"
+if [[ -z "${TEMPLEARCHY_QUEUE:-}" ]]; then
+  if [[ -d /mnt/host ]]; then
+    TEMPLEARCHY_QUEUE=/mnt/host/queue
+  else
+    TEMPLEARCHY_QUEUE="${HOME}/.local/share/templearchy/queue"
+  fi
+fi
+DIR="${TEMPLEARCHY_QUEUE}"
 mkdir -p "${DIR}"
 
 usage() {
@@ -20,11 +27,11 @@ EOF
 
 next_id() {
   local last
-  last="$(find "${DIR}" -maxdepth 1 -name '*.txt' -printf '%f\n' 2>/dev/null | sort | tail -n 1 || true)"
+  last="$(find "${DIR}" -maxdepth 1 -name '*.txt' 2>/dev/null | sort | tail -n 1 || true)"
   if [[ -z "${last}" ]]; then
     printf '%04d' 1
   else
-    printf '%04d' $((10#${last%.txt} + 1))
+    printf '%04d' $((10#$(basename "${last}" .txt) + 1))
   fi
 }
 
@@ -42,16 +49,17 @@ case "${cmd}" in
     echo "queued ${id}"
     ;;
   list)
-    if ! ls "${DIR}"/*.txt >/dev/null 2>&1; then
-      echo "(empty)"
-      exit 0
-    fi
-    for f in "${DIR}"/*.txt; do
+    found=0
+    while IFS= read -r f; do
+      found=1
       printf '%s  %s\n' "$(basename "${f}" .txt)" "$(tr '\n' ' ' <"${f}")"
-    done
+    done < <(find "${DIR}" -maxdepth 1 -name '*.txt' | sort)
+    if [[ "${found}" -eq 0 ]]; then
+      echo "(empty)"
+    fi
     ;;
   next)
-    first="$(ls "${DIR}"/*.txt 2>/dev/null | head -n 1 || true)"
+    first="$(find "${DIR}" -maxdepth 1 -name '*.txt' | sort | head -n 1 || true)"
     if [[ -z "${first}" ]]; then
       echo "(empty)" >&2
       exit 1
@@ -64,8 +72,7 @@ case "${cmd}" in
       echo "aichat not on PATH" >&2
       exit 1
     fi
-    while ls "${DIR}"/*.txt >/dev/null 2>&1; do
-      first="$(ls "${DIR}"/*.txt | head -n 1)"
+    while first="$(find "${DIR}" -maxdepth 1 -name '*.txt' | sort | head -n 1)" && [[ -n "${first}" ]]; do
       echo "==== $(basename "${first}") ===="
       aichat -H <"${first}"
       rm -f "${first}"
@@ -81,7 +88,7 @@ case "${cmd}" in
     done
     ;;
   clear)
-    rm -f "${DIR}"/*.txt
+    find "${DIR}" -maxdepth 1 -name '*.txt' -delete
     echo "cleared"
     ;;
   *)

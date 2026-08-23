@@ -14,7 +14,7 @@ DISPLAY_MODE="${TEMPLEARCHY_DISPLAY:-cocoa}"
 WIDTH="${TEMPLEARCHY_WIDTH:-1440}"
 HEIGHT="${TEMPLEARCHY_HEIGHT:-900}"
 
-mkdir -p "${CACHE}" "${SHARE}"
+mkdir -p "${CACHE}" "${SHARE}/queue"
 
 say() {
   echo "$*"
@@ -224,6 +224,7 @@ echo "boot:  ${BOOT_KIND} ${BOOT_PATH}"
 echo "qemu:  ${QEMU_BIN}"
 echo "uefi:  ${FIRMWARE}"
 echo "share: ${SHARE}  ->  /mnt/host"
+echo "queue: nix run ${FLAKE}#q -- add 'your prompt'"
 echo "ssh:   ssh josh@127.0.0.1 -p ${SSH_PORT}   (password: temple)"
 echo
 

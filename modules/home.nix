@@ -35,6 +35,7 @@
       echo "NIX CONFIGURES EVERYTHING"
       echo "i3 · wezterm · BigBlueTerm437 · nvim · q queue"
       echo "Super+Return temple  Super+n nvim  Super+g files  Super+t queue"
+      echo "from the Mac: nix run github:jcpsimmons/templearchy#q -- add 'prompt'"
       echo
     '';
     functions = {

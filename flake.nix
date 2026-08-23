@@ -72,6 +72,23 @@
           ];
           text = builtins.readFile ./scripts/verify-boot.sh;
         };
+
+      mkHostQ =
+        system:
+        let
+          pkgs = mkPkgs system;
+        in
+        pkgs.writeShellApplication {
+          name = "q";
+          runtimeInputs = with pkgs; [
+            coreutils
+            findutils
+          ];
+          text = ''
+            export TEMPLEARCHY_QUEUE="''${TEMPLEARCHY_QUEUE:-''${TEMPLEARCHY_SHARE:-$HOME/templearchy-share}/queue}"
+          ''
+          + lib.removePrefix "#!/usr/bin/env bash\n" (builtins.readFile ./scripts/guest/q);
+        };
     in
     {
       nixosConfigurations.templearchy = nixpkgs.lib.nixosSystem {
@@ -85,11 +102,13 @@
         let
           launch = mkLaunch system;
           verify = mkVerify system;
+          q = mkHostQ system;
         in
         {
           default = launch;
           launch = launch;
           verify = verify;
+          q = q;
         }
         // lib.optionalAttrs (system == guestSystem) {
           # ISO does not need KVM. qcow2 still does (linux-builder / local kvm).
@@ -111,6 +130,10 @@
         verify = {
           type = "app";
           program = lib.getExe self.packages.${system}.verify;
+        };
+        q = {
+          type = "app";
+          program = lib.getExe self.packages.${system}.q;
         };
       });
 
@@ -143,6 +166,7 @@
             grep -q 'temple-session' ${./dotfiles/i3/config}
             grep -q 'pcmanfm' ${./dotfiles/i3/config}
             test -x ${./scripts/guest/q}
+            grep -q '/mnt/host/queue' ${./scripts/guest/q}
             test -x ${./scripts/guest/temple-session.sh}
             grep -q 'Templearchy' ${./macos/Templearchy.app/Contents/MacOS/Templearchy}
             grep -q 'pgrep i3' ${./scripts/verify-boot.sh}

@@ -1,6 +1,6 @@
 {
   "purpose": "improve-templearchy",
-  "iteration": 12,
+  "iteration": 13,
   "max": 20,
-  "last": "System i3 config + temple-session (nvim|shell|q watch) so the queue is on PATH at login"
+  "last": "Host nix run .#q writes into ~/templearchy-share/queue; guest q watch reads /mnt/host/queue"
 }
