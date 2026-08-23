@@ -6,6 +6,8 @@ Not tasteful. Harsh high-contrast. BigBlueTerm437. Homebrew green. Murphy nvim. 
 
 ```
 nix run github:jcpsimmons/templearchy
+nix run github:jcpsimmons/templearchy#term
+nix run github:jcpsimmons/templearchy#q -- add 'your prompt'
 ```
 
 Or double-click `macos/Templearchy.app`. Nix still owns qemu, firmware, and the guest.
@@ -37,24 +39,26 @@ TEMPLEARCHY_MEM=16384 TEMPLEARCHY_CPUS=8 nix run .
 
 | Key | Action |
 | --- | --- |
-| Super+Enter | WezTerm |
+| Super+Enter | temple-session (nvim + shell + `q watch`) |
 | Super+Shift+Enter | WezTerm + tmux `temple` |
 | Super+n | nvim |
 | Super+g | files |
 | Super+t | queue tmux |
+| Space Q n | nvim: open next queued prompt |
+| Space Q l | nvim: list queue |
 | Super+e | files |
 | Super+d | rofi |
 | Super+h/j/k/l | focus |
 
 ## Queue
 
+From the Mac (lands in `~/templearchy-share/queue` → guest `/mnt/host/queue`):
+
 ```
-q add rewrite this function
-q list
-q drain
+nix run github:jcpsimmons/templearchy#q -- add 'rewrite this function'
 ```
 
-`q drain` runs `aichat`. No API keys are in the repo. Export yours in the guest.
+In the guest: `q add`, `q list`, `q drain`, `:Qnext`. `q drain` runs `aichat`. No API keys are in the repo.
 
 ## Edit the look
 

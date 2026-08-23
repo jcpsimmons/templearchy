@@ -1,6 +1,6 @@
 {
   "purpose": "improve-templearchy",
-  "iteration": 16,
+  "iteration": 17,
   "max": 20,
-  "last": "Host nix run .#term opens WezTerm+BigBlueTerm over SSH into the guest"
+  "last": "nvim :Qnext/:Qadd reads the same host share queue as nix run .#q"
 }

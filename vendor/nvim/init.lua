@@ -40,6 +40,7 @@ require("config.notifications")
 require("config.options")
 require("config.keymaps")
 require("config.autocmds")
+require("config.queue")
 
 -- Load VSCode-specific configuration if running in VSCode
 if vim.g.vscode then

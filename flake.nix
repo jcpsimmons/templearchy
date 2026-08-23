@@ -179,6 +179,7 @@
           nvim-vendor = pkgs.runCommand "templearchy-nvim" { } ''
             test -f ${./vendor/nvim/init.lua}
             grep -q 'murphy' ${./vendor/nvim/lua/plugins/themes.lua}
+            grep -q 'Qnext' ${./vendor/nvim/lua/config/queue.lua}
             touch "$out"
           '';
           i3-dotfile = pkgs.runCommand "templearchy-i3" { } ''
