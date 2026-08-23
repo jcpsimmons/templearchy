@@ -16,5 +16,6 @@ if ! command -v nix >/dev/null 2>&1; then
   exit 1
 fi
 
+osascript -e 'display notification "Nix is starting qemu. First run waits for the nightly ISO." with title "TEMPLEARCHY"' || true
 cd "${REPO}"
 exec nix run "${REPO}"

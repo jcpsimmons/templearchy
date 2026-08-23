@@ -16,8 +16,14 @@ HEIGHT="${TEMPLEARCHY_HEIGHT:-900}"
 
 mkdir -p "${CACHE}" "${SHARE}"
 
-echo "TEMPLEARCHY"
-echo "NIX CONFIGURES EVERYTHING"
+say() {
+  echo "$*"
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    osascript -e "display notification \"$*\" with title \"TEMPLEARCHY\"" >/dev/null 2>&1 || true
+  fi
+}
+
+say "NIX CONFIGURES EVERYTHING"
 echo "i3 in a Mac window"
 echo
 
@@ -80,6 +86,7 @@ resolve_boot() {
   fi
 
   echo "no local guest image; nightly first (Darwin cannot build aarch64-linux)" >&2
+  say "Fetching nightly ISO from GitHub"
 
   if fetch_release "templearchy-aarch64.iso.zst" "${CACHE}/templearchy-aarch64.iso" >/dev/null; then
     echo "iso ${CACHE}/templearchy-aarch64.iso"

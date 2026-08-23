@@ -79,7 +79,6 @@ in
   programs.dconf.enable = true;
 
   environment.systemPackages = with pkgs; [
-    firefox
     pcmanfm
     qutebrowser
     wezterm
