@@ -140,9 +140,10 @@
           '';
           i3-dotfile = pkgs.runCommand "templearchy-i3" { } ''
             grep -q 'set \$mod Mod4' ${./dotfiles/i3/config}
-            grep -q 'wezterm' ${./dotfiles/i3/config}
+            grep -q 'temple-session' ${./dotfiles/i3/config}
             grep -q 'pcmanfm' ${./dotfiles/i3/config}
             test -x ${./scripts/guest/q}
+            test -x ${./scripts/guest/temple-session.sh}
             grep -q 'Templearchy' ${./macos/Templearchy.app/Contents/MacOS/Templearchy}
             grep -q 'pgrep i3' ${./scripts/verify-boot.sh}
             grep -q 'edk2-arm-vars.fd' ${./scripts/launch.sh}

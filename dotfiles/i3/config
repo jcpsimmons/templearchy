@@ -5,10 +5,10 @@ set $menu rofi -show run -modi run,window
 
 font pango:BigBlueTerm437 Nerd Font 12
 
-# workspace bias: 1 = nvim/tmux, 2 = browser, 3 = files, 4 = queue
+# workspace bias: 1 = nvim/tmux, 2 = files, 3 = extra, 4 = queue
 set $ws1 "1:nvim"
-set $ws2 "2:web"
-set $ws3 "3:files"
+set $ws2 "2:files"
+set $ws3 "3:extra"
 set $ws4 "4:queue"
 
 gaps inner 0
@@ -29,12 +29,12 @@ client.urgent           #FFFF00 #000000 #FFFF00 #FFFF00 #FFFF00
 client.placeholder      #000000 #000000 #00FF00 #000000 #000000
 client.background       #000000
 
-bindsym $mod+Return exec $term
+bindsym $mod+Return exec temple-session
 bindsym $mod+Shift+Return exec $term start -- tmux new-session -A -s temple
 bindsym $mod+n exec $term start -- nvim
 bindsym $mod+g exec pcmanfm
 bindsym $mod+e exec pcmanfm
-bindsym $mod+t exec $term start -- tmux new-session -A -s queue
+bindsym $mod+t exec $term start -- tmux new-session -A -s queue -- q watch
 bindsym $mod+q kill
 bindsym $mod+d exec $menu
 bindsym $mod+Shift+c reload
@@ -87,4 +87,4 @@ bar {
 
 exec --no-startup-id xsetroot -solid "#000000"
 exec --no-startup-id xrandr --output Virtual-1 --mode 1440x900 || true
-exec --no-startup-id $term start -- tmux new-session -A -s temple
+exec --no-startup-id temple-session

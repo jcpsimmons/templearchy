@@ -34,7 +34,7 @@
       echo "TEMPLEARCHY"
       echo "NIX CONFIGURES EVERYTHING"
       echo "i3 · wezterm · BigBlueTerm437 · nvim · q queue"
-      echo "Super+Return term  Super+n nvim  Super+g web  Super+t queue"
+      echo "Super+Return temple  Super+n nvim  Super+g files  Super+t queue"
       echo
     '';
     functions = {

@@ -1,6 +1,6 @@
 {
   "purpose": "improve-templearchy",
-  "iteration": 11,
+  "iteration": 12,
   "max": 20,
-  "last": "QEMU 11 UEFI vars + writable pflash; guest booted i3/wezterm/nvim over SSH"
+  "last": "System i3 config + temple-session (nvim|shell|q watch) so the queue is on PATH at login"
 }

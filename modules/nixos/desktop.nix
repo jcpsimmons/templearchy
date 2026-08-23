@@ -13,6 +13,7 @@ in
   services.xserver.xkb.layout = "us";
   services.xserver.windowManager.i3 = {
     enable = true;
+    configFile = ../../dotfiles/i3/config;
     extraPackages = with pkgs; [
       dmenu
       i3status
@@ -22,6 +23,9 @@ in
       xsetroot
     ];
   };
+
+  # i3 also reads this if a session starts before home-manager links ~/.config.
+  environment.etc."i3/config".source = ../../dotfiles/i3/config;
 
   services.displayManager.defaultSession = "none+i3";
   services.displayManager.autoLogin.enable = true;
