@@ -196,6 +196,7 @@
             grep -q "pattern 'templearchy-aarch64.iso.zst'" ${./scripts/launch.sh}
             grep -q 'wezterm start' ${./scripts/host/term.sh}
             grep -q 'fetch_ci_artifact' ${./scripts/launch.sh}
+            grep -q 'iso_needs_refresh' ${./scripts/launch.sh}
             touch "$out"
           '';
           efi-iso =

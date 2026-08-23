@@ -198,6 +198,54 @@ fetch_ci_artifact() {
   unpack_iso_zst "${dest}"
 }
 
+STAMP="${CACHE}/nightly.zst.size"
+
+remember_zst_size() {
+  local zst="${CACHE}/templearchy-aarch64.iso.zst"
+  if [[ -f "${zst}" ]]; then
+    wc -c <"${zst}" | tr -d ' ' >"${STAMP}"
+  fi
+}
+
+# Keep a working local ISO unless nightly published a different zst.
+iso_needs_refresh() {
+  if [[ "${TEMPLEARCHY_PIN:-0}" == "1" ]]; then
+    return 1
+  fi
+  if [[ "${TEMPLEARCHY_REFRESH:-0}" == "1" ]]; then
+    return 0
+  fi
+  local remote
+  remote="$(asset_size templearchy-aarch64.iso.zst || true)"
+  if [[ -z "${remote}" ]]; then
+    return 1
+  fi
+  local known=""
+  if [[ -f "${STAMP}" ]]; then
+    known="$(tr -d '[:space:]' <"${STAMP}")"
+  elif [[ -f "${CACHE}/templearchy-aarch64.iso.zst" ]]; then
+    known="$(wc -c <"${CACHE}/templearchy-aarch64.iso.zst" | tr -d ' ')"
+  fi
+  if [[ -z "${known}" ]]; then
+    return 0
+  fi
+  [[ "${known}" != "${remote}" ]]
+}
+
+fetch_guest_iso() {
+  if fetch_release "templearchy-aarch64.iso.zst" "${CACHE}/templearchy-aarch64.iso" >/dev/null; then
+    remember_zst_size
+    return 0
+  fi
+  echo "nightly empty or mid-publish; trying latest successful CI artifact" >&2
+  say "Fetching ISO from CI artifact"
+  if fetch_ci_artifact "${CACHE}/templearchy-aarch64.iso" >/dev/null; then
+    remember_zst_size
+    return 0
+  fi
+  return 1
+}
+
 resolve_boot() {
   # prints: KIND PATH
   if [[ -n "${TEMPLEARCHY_IMAGE:-}" ]]; then
@@ -214,27 +262,30 @@ resolve_boot() {
     return
   fi
 
-  if [[ -f "${CACHE}/templearchy-aarch64.iso" ]]; then
+  if [[ -f "${CACHE}/templearchy-aarch64.iso" ]] && ! iso_needs_refresh; then
     echo "iso ${CACHE}/templearchy-aarch64.iso"
     return
   fi
 
-  echo "no local guest image; nightly first (Darwin cannot build aarch64-linux)" >&2
-  say "Fetching nightly ISO from GitHub"
+  if [[ -f "${CACHE}/templearchy-aarch64.iso" ]]; then
+    echo "nightly ISO changed; refreshing local cache" >&2
+    say "Refreshing guest ISO"
+  else
+    echo "no local guest image; nightly first (Darwin cannot build aarch64-linux)" >&2
+    say "Fetching nightly ISO from GitHub"
+  fi
 
-  if fetch_release "templearchy-aarch64.iso.zst" "${CACHE}/templearchy-aarch64.iso" >/dev/null; then
+  if fetch_guest_iso; then
+    echo "iso ${CACHE}/templearchy-aarch64.iso"
+    return
+  fi
+  if [[ -f "${CACHE}/templearchy-aarch64.iso" ]]; then
+    echo "refresh failed; using existing ISO" >&2
     echo "iso ${CACHE}/templearchy-aarch64.iso"
     return
   fi
   if fetch_release "templearchy-aarch64.qcow2.zst" "${CACHE}/templearchy-aarch64.qcow2" >/dev/null; then
     echo "disk ${CACHE}/templearchy-aarch64.qcow2"
-    return
-  fi
-
-  echo "nightly empty or mid-publish; trying latest successful CI artifact" >&2
-  say "Fetching ISO from CI artifact"
-  if fetch_ci_artifact "${CACHE}/templearchy-aarch64.iso" >/dev/null; then
-    echo "iso ${CACHE}/templearchy-aarch64.iso"
     return
   fi
 
