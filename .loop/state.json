@@ -1,6 +1,6 @@
 {
   "purpose": "improve-templearchy",
-  "iteration": 5,
+  "iteration": 6,
   "max": 20,
-  "last": "zstd -3 + artifact upload; -19 was blocking nightly publish"
+  "last": "split ISO over 2GB GitHub cap; launcher concatenates parts"
 }

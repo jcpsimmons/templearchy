@@ -16,30 +16,37 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@main
       - name: Build live ISO from flake (no KVM)
         run: nix build .#packages.aarch64-linux.iso -L --out-link result
-      - name: Compress ISO
+      - name: Compress and split under the 2GB GitHub file cap
         run: |
           iso="$(find -L result -name '*.iso' -print -quit)"
           test -n "$iso"
           ls -lh "$iso"
-          # -3 is fast enough for ARM CI. -19 blocked nightly for many minutes.
           zstd -T0 -3 -f "$iso" -o templearchy-aarch64.iso.zst
           ls -lh templearchy-aarch64.iso.zst
           bytes="$(wc -c < templearchy-aarch64.iso.zst)"
           if [ "$bytes" -gt 1900000000 ]; then
-            echo "compressed ISO is $bytes bytes; GitHub release cap is 2GB" >&2
-            exit 1
+            split -b 1800M -d -a 2 templearchy-aarch64.iso.zst templearchy-aarch64.iso.zst.
+            rm -f templearchy-aarch64.iso.zst
+            ls -lh templearchy-aarch64.iso.zst.*
           fi
-      - name: Keep the ISO as a workflow artifact
+      - name: Drop a leftover draft nightly so upload can replace it
+        run: |
+          gh api repos/${{ github.repository }}/releases --jq '.[] | select(.draft==true) | .id' \
+            | xargs -r -I{} gh api -X DELETE repos/${{ github.repository }}/releases/{}
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Keep parts as a workflow artifact
         uses: actions/upload-artifact@v4
         with:
           name: templearchy-aarch64-iso
-          path: templearchy-aarch64.iso.zst
+          path: templearchy-aarch64.iso.zst*
           if-no-files-found: error
       - name: Publish nightly
         uses: softprops/action-gh-release@v2
         with:
           tag_name: nightly
           name: templearchy nightly
-          files: templearchy-aarch64.iso.zst
-          body: NixOS aarch64 live ISO (i3 + wezterm + nvim). Built from flake.nix without KVM. Password is temple.
+          files: templearchy-aarch64.iso.zst*
+          body: NixOS aarch64 live ISO (i3 + wezterm + nvim). Built from flake.nix without KVM. Password is temple. If the ISO is split, the launcher concatenates the .00 .01 parts.
           make_latest: true
+          draft: false

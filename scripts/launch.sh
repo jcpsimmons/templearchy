@@ -51,13 +51,41 @@ copy_from_store() {
   echo "${dest}"
 }
 
+fetch_url() {
+  local url="$1"
+  local out="$2"
+  echo "fetch ${url}" >&2
+  curl -fL --retry 3 "${url}" -o "${out}"
+}
+
+# GitHub release files cap at 2GB. CI splits larger ISOs into .00 .01 ...
 fetch_release() {
   local name="$1"
   local dest="$2"
-  local url="https://github.com/${REPO}/releases/download/nightly/${name}"
-  echo "fetch ${url}" >&2
-  if curl -fL --retry 3 "${url}" -o "${dest}.zst"; then
-    zstd -d -f "${dest}.zst" -o "${dest}"
+  local base="https://github.com/${REPO}/releases/download/nightly"
+  local zst="${dest}.zst"
+
+  if fetch_url "${base}/${name}" "${zst}"; then
+    zstd -d -f "${zst}" -o "${dest}"
+    echo "${dest}"
+    return 0
+  fi
+
+  rm -f "${zst}"
+  local i=0
+  local part
+  while true; do
+    part="$(printf '%s.%02d' "${zst}" "${i}")"
+    if ! fetch_url "${base}/${name}.$(printf '%02d' "${i}")" "${part}"; then
+      break
+    fi
+    cat "${part}" >>"${zst}"
+    rm -f "${part}"
+    i=$((i + 1))
+  done
+
+  if [[ "${i}" -gt 0 && -f "${zst}" ]]; then
+    zstd -d -f "${zst}" -o "${dest}"
     echo "${dest}"
     return 0
   fi
