@@ -18,10 +18,12 @@
     "virtio_blk"
     "virtio_net"
     "virtio_gpu"
-    "virtio_9p"
+    "xhci_pci"
+  ];
+  # 9p is host-share only. virtio_9p is not a real module name and breaks the ISO initrd.
+  boot.kernelModules = [
     "9p"
     "9pnet_virtio"
-    "xhci_pci"
   ];
 
   # Generators override this. Bare `nixos-rebuild` / build-vm needs a default.

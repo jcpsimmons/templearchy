@@ -1,6 +1,6 @@
 {
   "purpose": "improve-templearchy",
-  "iteration": 2,
+  "iteration": 3,
   "max": 20,
-  "last": "EFI live ISO + nightly-first Mac launcher"
+  "last": "drop fake virtio_9p so the live ISO initrd builds"
 }
